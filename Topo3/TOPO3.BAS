@@ -370,25 +370,36 @@ DIM Map2(&H0 TO &H1D0)
 END SUB
 
 SUB DrawLegend
-DIM Legend(&H0 TO &H1400)
+DIM Labels(0 TO 5) AS STRING
+DIM Legend(&H0 TO &H15BF)
+DIM Wdth
 
- LINE (465, 80)-STEP(167, 120), 8, BF
- LINE (467, 82)-STEP(167, 120), 8, BF
- LINE (466, 81)-STEP(165, 118), 15, B
- LOCATE 12, 65: PRINT GetText$(5)
+ Wdth = 0
+ FOR Label = LBOUND(Labels) TO UBOUND(Labels)
+  Labels(Label) = GetText$(5 + Label)
+  IF LEN(Labels(Label)) > Wdth THEN Wdth = LEN(Labels(Label))
+ NEXT Label
+
+ y = 78 - Wdth
+ Wdth = (7 + Wdth) * 8
+ x = 632 - Wdth
+ LINE (x, 80)-STEP(Wdth, 120), 8, BF
+ LINE (x + 2, 82)-STEP(Wdth, 120), 8, BF
+ LINE (x + 1, 81)-STEP(Wdth - 2, 118), 15, B
+ LOCATE 12, y: PRINT Labels(LBOUND(Labels))
  PRINT
- FOR Index = 6 TO 10
-  LOCATE , 66: PRINT GetText$(Index)
+ FOR Label = LBOUND(Labels) + 1 TO UBOUND(Labels)
+  LOCATE , y + 1: PRINT Labels(Label)
   PRINT
- NEXT Index
- GET (465, 80)-STEP(167, 120), Legend
- PUT (465, 80), Legend, PRESET
- LINE (485, 106)-STEP(10, 5), 4, BF
- CIRCLE (490, 124), 3, 4: PAINT (490, 124), 4
- CIRCLE (490, 140), 3, 1: PAINT (490, 140), 1
+ NEXT Label
+ GET (x, 80)-STEP(Wdth, 120), Legend
+ PUT (x, 80), Legend, PRESET
+ LINE (x + 19, 106)-STEP(10, 5), 4, BF
+ CIRCLE (x + 24, 124), 3, 4: PAINT (x + 24, 124), 4
+ CIRCLE (x + 24, 140), 3, 1: PAINT (x + 24, 140), 1
 
- DisplayImage 480, 152, "Mountain.sym", "Mountain.msk", 0, 0
- DisplayImage 480, 168, "Volcano.symfr", "Volcano.msk", 0, 0
+ DisplayImage x + 12, 152, "Mountain.sym", "Mountain.msk", 0, 0
+ DisplayImage x + 12, 168, "Volcano.sym", "Volcano.msk", 0, 0
 END SUB
 
 SUB DrawTextBox (x, y, Wdth, Height)
@@ -694,16 +705,16 @@ DIM Button(&H0 TO &H600)
  Text$ = " " + Text$
  LOCATE ButtonX, ButtonY: PRINT Text$; SPACE$(Wdth - LEN(Text$));
 
- Wdth = Wdth * 8
+ PixelWidth = Wdth * 8
  SWAP ButtonY, ButtonX
  ButtonX = (ButtonX - 1) * 8
  ButtonY = (ButtonY - 1) * 8
 
- GET (ButtonX, ButtonY)-STEP(Wdth - 1, 7), Button
- LINE (ButtonX, ButtonY)-STEP(Wdth, 8), 0, BF
- DRAW "C8 BM" + STR$(ButtonX + 2) + "," + STR$(ButtonY + 9) + " R" + STR$(Wdth - 1) + "U7 R1 D8 L" + STR$(Wdth)
+ GET (ButtonX, ButtonY)-STEP(PixelWidth - 1, 7), Button
+ LINE (ButtonX, ButtonY)-STEP(PixelWidth, 8), 0, BF
+ DRAW "C8 BM" + STR$(ButtonX + 2) + "," + STR$(ButtonY + 9) + " R" + STR$(PixelWidth - 1) + "U7 R1 D8 L" + STR$(PixelWidth)
  PUT (ButtonX, ButtonY), Button, PRESET
- IF HasEdge THEN DRAW "C0 BM" + STR$(ButtonX - 1) + "," + STR$(ButtonY - 1) + " D8 U8 R" + STR$(Wdth)
+ IF HasEdge THEN DRAW "C0 BM" + STR$(ButtonX - 1) + "," + STR$(ButtonY - 1) + " D8 U8 R" + STR$(PixelWidth)
 END SUB
 
 SUB Menu
@@ -921,10 +932,16 @@ FUNCTION YesNoDialog (Text$)
 DIM Registers AS RegistersStr
 
  DialogBox 15, 45, Text$, 0
+ Yes$ = GetText$(29) + " "
+ No$ = GetText$(30) + " "
+ IF LEN(Yes$) >= LEN(No$) THEN Wdth = LEN(Yes$) ELSE Wdth = LEN(No$)
+ Wdth = Wdth + 1
+
  YesY = 41 - (LEN(Text$) / 2)
- NoY = 33 + (LEN(Text$) / 2)
- MakeButton 18, YesY, 6, GetText$(29), -1
- MakeButton 18, NoY, 6, GetText$(30), -1
+ NoY = (39 + (LEN(Text$) / 2)) - Wdth
+
+ MakeButton 18, YesY, Wdth, Yes$, -1
+ MakeButton 18, NoY, Wdth, No$, -1
 
  Answer = -2
  DO WHILE Answer = -2
@@ -932,11 +949,11 @@ DIM Registers AS RegistersStr
   LOOP UNTIL GetMouseStatus(MouseX, MouseY) = 1
   MouseX = INT(MouseX / 8) + 1
   MouseY = INT(MouseY / 8) + 1
-  IF MouseX >= YesY AND MouseX < YesY + 6 AND MouseY = 18 THEN
-   PressButton YesY, 18, 7
+  IF MouseX >= YesY AND MouseX < YesY + Wdth AND MouseY = 18 THEN
+   PressButton YesY, 18, Wdth + 1
    Answer = -1
-  ELSEIF MouseX >= NoY AND MouseX < NoY + 6 AND MouseY = 18 THEN
-   PressButton NoY, 18, 7
+  ELSEIF MouseX >= NoY AND MouseX < NoY + Wdth AND MouseY = 18 THEN
+   PressButton NoY, 18, Wdth + 1
    Answer = 0
   END IF
  LOOP
