@@ -441,7 +441,7 @@ STATIC ErrorText$()
 
  IF Index = -1 THEN
   REDIM ErrorText$(0 TO 13)
-  Index = 0
+  Index = LBOUND(ErrorText$)
   FileHandle = FREEFILE
   OPEN "Errors." + Extension$("") FOR INPUT LOCK READ WRITE AS FileHandle
    DO UNTIL EOF(FileHandle)
@@ -534,7 +534,7 @@ STATIC Text$()
 
  IF Index = -1 THEN
   REDIM Text$(0 TO 35)
-  CurrentIndex = 0
+  CurrentIndex = LBOUND(Text$)
   FileHandle = FREEFILE
   OPEN ".\Data\Text." + Extension$("") FOR INPUT LOCK READ WRITE AS FileHandle
    DO UNTIL EOF(FileHandle)
@@ -854,7 +854,7 @@ DIM Text$
  Languages$ = Text$ + GetLanguages$(Extensions$())
  Registers.ax = &H2: Interrupt &H33, Registers, Registers
  DialogBox 9, 100, Languages$, LEN(Text$) - 1
- Index = 0
+ Index = LBOUND(Extensions$)
 
  DO
   CursorY = (Index + 10) * 8
