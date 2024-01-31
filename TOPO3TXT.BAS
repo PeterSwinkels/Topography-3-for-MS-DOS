@@ -46,8 +46,8 @@ FUNCTION Choose$ (Prompt$, Choices$)
  PRINT Prompt$;
 
  DO
-  Choice$ = INPUT$(1)
- LOOP UNTIL INSTR(UCASE$(Choices$), UCASE$(Choice$)) > 0
+  Choice$ = UCASE$(INPUT$(1))
+ LOOP UNTIL INSTR(UCASE$(Choices$), Choice$) > 0
  PRINT " "; Choice$;
 
  Choose$ = Choice$
@@ -78,7 +78,6 @@ SUB DecodeFile (InputFile$, UnencodeCount)
  OPEN InputFile$ FOR INPUT LOCK READ WRITE AS InputFileH
   LINE INPUT #InputFileH, Extension$
   OutputFile$ = LEFT$(InputFile$, LEN(InputFile$) - LEN(GetExtension$(InputFile$))) + Extension$
-  PRINT "Decoding "; InputFile$; " -> "; OutputFile$
 
   Continue = FALSE
   IF FileExists(OutputFile$) THEN
@@ -88,6 +87,7 @@ SUB DecodeFile (InputFile$, UnencodeCount)
   END IF
 
   IF Continue THEN
+   PRINT "Decoding "; InputFile$; " -> "; OutputFile$
    OutputFileH = FREEFILE
    OPEN OutputFile$ FOR OUTPUT LOCK READ WRITE AS OutputFileH
     DO UNTIL EOF(InputFileH)
@@ -151,7 +151,6 @@ SUB EncodeFile (InputFile$)
    InputFileH = FREEFILE
    OPEN InputFile$ FOR INPUT LOCK READ WRITE AS InputFileH
     OutputFile$ = LEFT$(InputFile$, LEN(InputFile$) - LEN(Extension$)) + "TXT"
-    PRINT "Encoding "; InputFile$; " -> "; OutputFile$
 
     Continue = FALSE
     IF FileExists(OutputFile$) THEN
@@ -161,6 +160,7 @@ SUB EncodeFile (InputFile$)
     END IF
 
     IF Continue THEN
+     PRINT "Encoding "; InputFile$; " -> "; OutputFile$
      OutputFileH = FREEFILE
      OPEN OutputFile$ FOR OUTPUT LOCK READ WRITE AS OutputFileH
       PRINT #OutputFileH, Extension$
